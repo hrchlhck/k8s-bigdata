@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: datanode-svc
+spec:
+  selector:
+    app: hadoop
+    tier: datanode
+  ports:
+    - name: datanode
+      port: 9864
+      targetPort: 9864
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: datanode
+spec:
+  selector:
+    matchLabels:
+      app: hadoop
+      tier: datanode
+  template:
+    metadata:
+      labels:
+        app: hadoop
+        tier: datanode
+    spec:
+      containers:
+        - image: "vpemfh7/hadoop-datanode:latest"
+          name: datanode
+          envFrom:
+            - configMapRef:
+                name: hadoop-env
+          env:
+          - name: NAMENODE_IP
+            value: "$(NAMENODE_SVC_PORT_9000_TCP_ADDR)"
+          - name: CORE_CONF_fs_defaultFS
+            value: "hdfs://$(NAMENODE_IP):9000"       
+          volumeMounts:
+            - mountPath: /hadoop/dfs/data
+              name: vol 
+          ports:
+            - containerPort: 9864
+      volumes:
+        - name: vol

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: namenode-svc
+spec:
+  selector:
+    app: hdfs
+    tier: namenode
+  ports:
+  - name: web-ui
+    port: 9870
+    targetPort: 9870
+  - name: ipc
+    port: 9000
+    targetPort: 9000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namenode
+spec:
+  selector:
+    matchLabels:
+      app: hdfs
+      tier: namenode
+  template:
+    metadata:
+      labels:
+        app: hdfs
+        tier: namenode
+    spec:
+      containers:
+        - image: 'vpemfh7/hadoop-namenode:latest'
+          name: namenode
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: CLUSTER_NAME
+              value: namenode
+            - name: CONF_FS_fs_defaultFS
+              value: hdfs://$(POD_NAME):9000
+          envFrom:
+            - configMapRef:
+                name: hadoop-env
+          volumeMounts:
+            - mountPath: /hadoop/dfs/name
+              name: vol
+          ports:
+            - containerPort: 9870
+            - containerPort: 9000
+      volumes:
+        - name: vol
+
+
