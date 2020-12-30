@@ -4,15 +4,36 @@ metadata:
   name: namenode-svc
 spec:
   selector:
-    app: hdfs
+    app: hadoop
     tier: namenode
   ports:
-  - name: web-ui
-    port: 9870
-    targetPort: 9870
-  - name: ipc
-    port: 9000
-    targetPort: 9000
+    - name: web-ui
+      port: 9870
+      protocol: TCP
+      targetPort: 9870
+    - name: namenode-ipc
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: yarn-web-ui
+      port: 8088
+      targetPort: 8088
+      protocol: TCP
+    - name: yarn-scheduler
+      port: 8030
+      targetPort: 8030
+      protocol: TCP
+    - name: yarn-jobtracker
+      port: 8031
+      targetPort: 8031
+      protocol: TCP
+    - name: yarn
+      port: 8032
+      targetPort: 8032
+      protocol: TCP
+    - name: datanode-dst
+      port: 9866
+      targetPort: 9866
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -21,36 +42,56 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: hdfs
+      app: hadoop
       tier: namenode
   template:
     metadata:
       labels:
-        app: hdfs
+        app: hadoop
         tier: namenode
     spec:
       containers:
-        - image: 'vpemfh7/hadoop-namenode:latest'
+        - image: "bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8"
           name: namenode
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: CLUSTER_NAME
-              value: namenode
-            - name: CONF_FS_fs_defaultFS
-              value: hdfs://$(POD_NAME):9000
           envFrom:
             - configMapRef:
                 name: hadoop-env
-          volumeMounts:
-            - mountPath: /hadoop/dfs/name
-              name: vol
+          env:
+          - name: MULTIHOMED_NETWORK
+            value: "0"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name 
+          - name: CLUSTER_NAME
+            value: namenode
+          - name: CORE_CONF_fs_defaultFS
+            value: "hdfs://$(POD_NAME):9000"
           ports:
             - containerPort: 9870
             - containerPort: 9000
+            - containerPort: 9866
+          volumeMounts:
+            - mountPath: /hadoop/dfs/name
+              name: vol
+        - image: "bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8"
+          name: resourcemanager
+          envFrom:
+            - configMapRef:
+                name: hadoop-env
+          ports:
+            - containerPort: 8088
+            - containerPort: 8031
+            - containerPort: 8030
+            - containerPort: 8032
+        - image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
+          name: historyserver
+          volumeMounts:
+            - mountPath: /hadoop/yarn/timeline
+              name: historyserver
+          envFrom:
+            - configMapRef:
+                name: hadoop-env
       volumes:
         - name: vol
-
-
+        - name: historyserver

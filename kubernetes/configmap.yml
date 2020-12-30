@@ -11,6 +11,9 @@ data:
     HDFS_CONF_dfs_permissions_enabled=false
     HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check=false
 
+    HDFS_CONF_dfs_datanode_use_datanode_hostname=false
+    HDFS_CONF_dfs_client_use_datanode_hostname=false
+
     YARN_CONF_yarn_log___aggregation___enable=true
     YARN_CONF_yarn_log_server_url=http://historyserver:8188/applicationhistory/logs/
     YARN_CONF_yarn_resourcemanager_recovery_enabled=true
