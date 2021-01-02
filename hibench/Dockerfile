@@ -17,3 +17,12 @@ WORKDIR ./HiBench/HiBench-${HIBENCH_VERSION}
 
 # Build Apache Spark module
 RUN mvn -Psparkbench clean package
+
+# Adding configuration script and it's dependency
+RUN apt install -y python3
+ADD create_config.py /
+ADD ./hdfs.env /
+ADD ./spark.env / 
+ADD entrypoint.sh /
+
+ENTRYPOINT ["/entrypoint.sh"]
