@@ -12,7 +12,7 @@ def write_items(file: TextIO, sep: str, *items: List) -> None:
         file.write("{}\n".format(config))
 
 
-def write_config(filename: str) -> None:
+def write_config(prefix:str, filename: str) -> None:
     """ Creates a file containing configurations for HiBench depending on environment variables
 
         Arguments:
@@ -41,7 +41,7 @@ def write_config(filename: str) -> None:
             return "hdfs" in config_name or "hadoop" in config_name
 
     with open(filename, mode='w') as file:
-        items = list(filter(lambda x: 'HIBENCH' in x[0], os.environ.items()))
+        items = list(filter(lambda x: prefix in x[0], os.environ.items()))
         items = list(map(lambda x: (x[0].lower(), x[1].lower()), items))
 
         # Will filter configuration lines based on the name of the file
@@ -57,8 +57,8 @@ if __name__ == '__main__':
     # Argument count
     argc = len(sys.argv)
 
-    if argc == 2:
-        write_config(sys.argv[1])
-    elif argc == 1:
-        print("ERROR: Missing file name")
+    if argc == 3:
+        write_config(sys.argv[1], sys.argv[2])
+    else:
+        print("Usage: create_config.py <PREFIX> <FILENAME>")
         exit(-1)

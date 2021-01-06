@@ -7,20 +7,24 @@ plain='\033[0m'
 # By default is the 'conf' on HiBench home
 CONFIG_DIR=./conf
 
+function print() {
+    echo -e "${green}$1${plain}"
+}
+
 function load_config() {
-    source /hdfs.env
+    source /hadoop.env
     source /spark.env
-    echo -e "${green}Loaded environment variables ${plain}"
+    print "Loaded environment variables"
 }
 
 function create_config() {
-    python3 /create_config.py $1
-    echo -e "${green}Created configuration file for $1 ${plain}"
+    python3 /create_config.py $1 $2
+    print "Created configuration file for $1"
 }
 
 load_config
-create_config ${CONFIG_DIR}/hdfs.conf
-create_config ${CONFIG_DIR}/spark.conf
+create_config "HIBENCH" ${CONFIG_DIR}/hadoop.conf
+create_config "HIBENCH" ${CONFIG_DIR}/spark.conf
 # Make the function 'executable' in shell
 export -f create_config
 
