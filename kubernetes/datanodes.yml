@@ -12,6 +12,15 @@ spec:
       targetPort: 9864
       protocol: TCP
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-client
+spec:
+  selector:
+    app: spark-client
+  clusterIP: None
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -28,6 +37,11 @@ spec:
         tier: datanode
     spec:
       containers:
+        - name: spark-worker
+          image: bde2020/spark-worker:3.0.1-hadoop3.2
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8081
         - image: "bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8"
           name: datanode
           envFrom:
