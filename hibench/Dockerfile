@@ -15,10 +15,8 @@ RUN rm v${HIBENCH_VERSION}.zip
 
 WORKDIR /HiBench/HiBench-${HIBENCH_VERSION}
 
-ENV SPARK_VERSION=3.0.0
-
 # Build Apache Spark module
-RUN mvn -Psparkbench -Dscala=2.12 clean package
+RUN mvn -Psparkbench -Dscala=2.12.0 clean package
 
 # Adding configuration script and it's dependency
 RUN apt install -y python3
@@ -26,5 +24,6 @@ ADD ./create_config.py /
 ADD ./hadoop.env /
 ADD ./spark.env / 
 ADD ./entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
