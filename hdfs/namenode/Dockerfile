@@ -1,4 +1,4 @@
-FROM vpemfh7/hadoop2.6-base
+FROM vpemfh7/hadoop-base
 
 LABEL MAINTAINER "Pedro Horchulhack <pedrohorchulhack@gmail.com>"
 
