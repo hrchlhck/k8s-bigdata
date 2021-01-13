@@ -11,21 +11,22 @@ def get_env(prefix: str) -> list:
         unwanted_chars = "\n\r\t?; "
         for char in unwanted_chars:
             text = text.replace(char, "")
-        
+        return text
+
+    def map_keys(text: str) -> str:
         # Remove underscores
         text = text.replace("_", ".")
 
         # Fix configurations that are separated by triple underscores
         if "..." in text:
-            text = text.replace("...", "_")
-
+            text = text.replace("...", "-")
         return text
 
     # Get environment variables based on prefix
     env_vars = list(filter(lambda x: prefix in x[0], os.environ.items()))
 
     # Remove unwanted characters and replaces _ by .
-    cleared = list(map(lambda x: {clear_text(x[0].split(prefix + "_")[1]): clear_text(x[1])}, env_vars))
+    cleared = list(map(lambda x: {map_keys(clear_text(x[0].split(prefix + "_")[1])): clear_text(x[1])}, env_vars))
 
     return cleared
 

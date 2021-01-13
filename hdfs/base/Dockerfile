@@ -1,22 +1,27 @@
 FROM debian:9
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+# Dependencies
+RUN apt update && apt install -y \
       openjdk-8-jdk \
       net-tools \
       curl \
-      netcat \
       gnupg \
       libsnappy-dev \
+      maven \
+      python \
+      python3 \ 
+      wget \
+      libc6 \
+      netcat \
     && rm -rf /var/lib/apt/lists/*
       
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 
-RUN curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS
+# HDFS
+RUN curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS && gpg --import KEYS
 
-RUN gpg --import KEYS
-
-ENV HADOOP_VERSION=2.6.0
-ENV HADOOP_URL=https://archive.apache.org/dist/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
+ENV HADOOP_VERSION=3.2.1
+ENV HADOOP_URL=https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
 
 RUN set -x \
     && curl -fSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
@@ -25,19 +30,29 @@ RUN set -x \
     && tar -xvf /tmp/hadoop.tar.gz -C /opt/ \
     && rm /tmp/hadoop.tar.gz*
 
-RUN ln -s /opt/hadoop-${HADOOP_VERSION}/etc/hadoop /etc/hadoop
+# Spark
+ENV SPARK_VERSION=3.0.0
+ENV HADOOP_VERSION=3.2
 
-RUN mkdir /opt/hadoop-${HADOOP_VERSION}/logs
+RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
+    && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && cd /
+
+# Remove unnecessary packages
+ENV PYTHONHASHSEED=1
+
+RUN ln -s /opt/hadoop-${HADOOP_VERSION}.1/etc/hadoop /etc/hadoop
+
+RUN mkdir /opt/hadoop-${HADOOP_VERSION}.1/logs
 
 RUN mkdir /hadoop-data
 
-ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
+ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}.1
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV USER=root
 ENV PATH $HADOOP_HOME/bin/:$PATH
-
-RUN apt update -y
-RUN apt install -y python3 python3-pip
 
 ADD entrypoint.sh /
 ADD create_config.py /
