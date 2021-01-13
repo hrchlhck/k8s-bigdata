@@ -1,0 +1,178 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: namenode
+spec:
+  selector:
+    app: namenode
+  clusterIP: None
+  ports:
+    - name: web-ui
+      port: 9870
+      targetPort: 9870
+    - name: namenode-ipc
+      port: 9000
+      targetPort: 9000
+    - name: yarn-web-ui
+      port: 8088
+      targetPort: 8088
+    - name: yarn-scheduler
+      port: 8030
+      targetPort: 8030
+    - name: yarn-jobtracker
+      port: 8031
+      targetPort: 8031
+    - name: yarn
+      port: 8032
+      targetPort: 8032
+    - name: datanode
+      port: 9866
+      targetPort: 9866
+    - name: datanode2
+      port: 9864
+      targetPort: 9864
+    - name: web-ui-spark
+      port: 8080
+      targetPort: 8080
+    - name: master-spark
+      port: 7077
+      targetPort: 7077
+    - name: master-rest-spark
+      port: 6066
+      targetPort: 6066
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: datanode-svc
+spec:
+  selector:
+    app: datanode
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namenode-dpl
+  labels:
+    app: namenode
+spec:
+  selector:
+    matchLabels:
+      app: namenode
+  template:
+    metadata:
+      labels:
+        app: namenode
+    spec:
+      volumes:
+        - name: vol
+        - name: historyserver
+      containers:
+      - name: namenode
+        image: vpemfh7/hadoop-namenode
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CORE_CONF_fs_defaultFS
+          value: "hdfs://$(POD_NAME):9000"
+        ports:
+          - containerPort: 9870
+          - containerPort: 9000
+          - containerPort: 9866
+          - containerPort: 8080
+          - containerPort: 7077
+          - containerPort: 6066
+        volumeMounts:
+          - name: vol
+            mountPath: /hadoop/dfs/name
+      - image: vpemfh7/hadoop-resourcemanager
+        name: resourcemanager
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CORE_CONF_fs_defaultFS
+          value: "hdfs://$(POD_NAME):9000"
+        - name: YARN_CONF_yarn_resourcemanager_hostname
+          value: namenode
+        - name: YARN_CONF_yarn_resourcemanager_address
+          value: namenode:8032
+        - name: YARN_CONF_yarn_resourcemanager_scheduler_address
+          value: namenode:8030
+        - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
+          value: namenode:8031
+        - name: SERVICE_PRECONDITION
+          value: "namenode:9870 namenode:9000"
+        ports:
+          - containerPort: 8088
+          - containerPort: 8031
+          - containerPort: 8032
+          - containerPort: 8030
+      - image: vpemfh7/hadoop-historyserver
+        name: historyserver
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CORE_CONF_fs_defaultFS
+          value: "hdfs://$(POD_NAME):9000"
+        - name: SERVICE_PRECONDITION
+          value: "namenode:9870 namenode:9000"
+        volumeMounts:
+          - name: historyserver
+            mountPath: /hadoop/yarn/timeline
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: datanode-ds
+  labels:
+    app: datanode
+spec:
+  selector:
+    matchLabels:
+      app: datanode
+  template:
+    metadata:
+      labels:
+        app: datanode
+    spec:
+      containers:
+        - image: vpemfh7/hadoop-datanode
+          name: datanode
+          env:
+          - name: CORE_CONF_fs_defaultFS
+            value: "hdfs://namenode:9000"
+          - name: SPARK_MASTER
+            value: "spark://namenode:7077"
+          - name: SERVICE_PRECONDITION
+            value: "namenode:9870 namenode:9000 namenode:8080 namenode:7077"
+          volumeMounts:
+            - mountPath: /hadoop/dfs/name
+              name: vol 
+          ports:
+            - containerPort: 8081
+            - containerPort: 4040
+            - containerPort: 9864
+        - image: vpemfh7/hadoop-nodemanager
+          name: nodemanager
+          env:
+          - name: CORE_CONF_fs_defaultFS
+            value: "hdfs://namenode:9000"
+          - name: SERVICE_PRECONDITION
+            value: "namenode:9870 namenode:9000 namenode:8088"
+          - name: YARN_CONF_yarn_resourcemanager_hostname
+            value: namenode
+          - name: YARN_CONF_yarn_resourcemanager_address
+            value: namenode:8032
+          - name: YARN_CONF_yarn_resourcemanager_scheduler_address
+            value: namenode:8030
+          - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
+            value: namenode:8031
+      volumes:
+        - name: vol
