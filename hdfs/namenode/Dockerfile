@@ -10,6 +10,17 @@ VOLUME /hadoop/dfs/name
 EXPOSE 9870 9000
 
 # Spark
+ENV SPARK_VERSION=3.0.0
+ENV HADOOP_VERSION=3.2
+
+RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
+    && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && cd /
+
+ENV PYTHONHASHSEED=1
+
 ENV SPARK_MASTER_PORT=7077
 ENV SPARK_MASTER_WEBUI_PORT=8080
 ENV SPARK_MASTER_LOG=/spark/logs
@@ -29,7 +40,7 @@ ADD pom.xml /
 RUN mkdir /scripts \
     && mv /pom.xml /hibench/sparkbench/pom.xml \
     && cd /hibench \
-    && mvn -Psparkbench -Dmodules -Pmicro clean package \
+    && mvn -Psparkbench -Dmodules -Pmicro package \
     && cd /
 
 ENV CONF=/HiBench/scripts

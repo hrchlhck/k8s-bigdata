@@ -30,26 +30,13 @@ RUN set -x \
     && tar -xvf /tmp/hadoop.tar.gz -C /opt/ \
     && rm /tmp/hadoop.tar.gz*
 
-# Spark
-ENV SPARK_VERSION=3.0.0
-ENV HADOOP_VERSION=3.2
+RUN ln -s /opt/hadoop-${HADOOP_VERSION}/etc/hadoop /etc/hadoop
 
-RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
-    && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && cd /
-
-# Remove unnecessary packages
-ENV PYTHONHASHSEED=1
-
-RUN ln -s /opt/hadoop-${HADOOP_VERSION}.1/etc/hadoop /etc/hadoop
-
-RUN mkdir /opt/hadoop-${HADOOP_VERSION}.1/logs
+RUN mkdir /opt/hadoop-${HADOOP_VERSION}/logs
 
 RUN mkdir /hadoop-data
 
-ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}.1
+ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV USER=root
 ENV PATH $HADOOP_HOME/bin/:$PATH
