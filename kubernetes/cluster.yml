@@ -13,12 +13,6 @@ spec:
     - name: namenode-ipc
       port: 9000
       targetPort: 9000
-    - name: datanode
-      port: 9866
-      targetPort: 9866
-    - name: datanode2
-      port: 9864
-      targetPort: 9864
     - name: web-ui-spark
       port: 8080
       targetPort: 8080
@@ -28,15 +22,6 @@ spec:
     - name: master-rest-spark
       port: 6066
       targetPort: 6066
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: datanode-svc
-spec:
-  selector:
-    app: datanode
-  clusterIP: None
 ---
 apiVersion: v1
 kind: Service
@@ -75,51 +60,25 @@ spec:
     - name: ipc
       port: 10020
       targetPort: 10020
-    - name: idk-yet
+    - name: other-web-ui
       port: 8188
       targetPort: 8188
 ---
 apiVersion: v1
-kind: Pod
-metadata:
-  name: historyserver
-  labels: 
-    app: historyserver
+kind: Service
+metadata: 
+  name: datanode
 spec:
-  containers:
-    - image: vpemfh7/hadoop-historyserver
-      name: historyserver
-      env:
-      - name: SERVICE_PRECONDITION
-        value: "namenode:9870 namenode:9000 resourcemanager:8088"
-      ports:
-        - containerPort: 8188
-        - containerPort: 19888
-        - containerPort: 10020
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: resourcemanager
-  labels: 
-    app: resourcemanager
-spec:
-  containers:
-    - image: vpemfh7/hadoop-resourcemanager
-      name: resourcemanager
-      env:
-      - name: SERVICE_PRECONDITION
-        value: "namenode:9870 namenode:9000"
-      ports:
-        - containerPort: 8088
-        - containerPort: 8031
-        - containerPort: 8032
-        - containerPort: 8030
-      volumeMounts:
-        - name: historyserver
-          mountPath: /hadoop/yarn/timeline
-  volumes:
-    - name: historyserver
+  selector:
+    app: datanode
+  clusterIP: None
+  ports:
+    - name: spark-worker-ui
+      port: 8081
+      targetPort: 8081
+    - name: datanode-ipc
+      port: 9864
+      targetPort: 9864
 ---
 apiVersion: v1
 kind: Pod
@@ -130,6 +89,7 @@ metadata:
 spec:
   volumes:
     - name: vol
+  nodeName: hrck
   containers:
   - name: namenode
     image: vpemfh7/hadoop-namenode
@@ -153,10 +113,54 @@ spec:
       - name: vol
         mountPath: /hadoop/dfs/name
 ---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: historyserver
+  labels: 
+    app: historyserver
+spec:
+  nodeName: hrck
+  containers:
+    - image: vpemfh7/hadoop-historyserver
+      name: historyserver
+      env:
+      - name: SERVICE_PRECONDITION
+        value: "namenode:9870 namenode:9000 resourcemanager:8088"
+      ports:
+        - containerPort: 8188
+        - containerPort: 19888
+        - containerPort: 10020  
+      volumeMounts:
+        - name: historyserver
+          mountPath: /hadoop/yarn/timeline
+  volumes:
+    - name: historyserver
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: resourcemanager
+  labels: 
+    app: resourcemanager
+spec:
+  nodeName: hrck
+  containers:
+    - image: vpemfh7/hadoop-resourcemanager
+      name: resourcemanager
+      env:
+      - name: SERVICE_PRECONDITION
+        value: "namenode:9870 namenode:9000"
+      ports:
+        - containerPort: 8088
+        - containerPort: 8031
+        - containerPort: 8032
+        - containerPort: 8030
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: datanode-ds
+  name: datanode
   labels:
     app: datanode
 spec:
@@ -175,7 +179,7 @@ spec:
           - name: SPARK_MASTER
             value: "spark://namenode:7077"
           - name: SERVICE_PRECONDITION
-            value: "namenode:9870 namenode:9000 namenode:8080 namenode:7077"
+            value: "namenode:9870 namenode:9000 namenode:8080"
           volumeMounts:
             - mountPath: /hadoop/dfs/data
               name: vol 
