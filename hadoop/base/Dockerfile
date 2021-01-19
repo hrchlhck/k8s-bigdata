@@ -41,6 +41,17 @@ ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV USER=root
 ENV PATH $HADOOP_HOME/bin/:$PATH
 
+# Apache Spark
+ENV SPARK_VERSION=3.0.0
+ENV HADOOP_VERSION=3.2
+ENV PYTHONHASHSEED=1
+
+RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
+    && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && cd /
+
 ADD entrypoint.sh /
 ADD create_config.py /
 ADD hadoop.env /
