@@ -1,4 +1,4 @@
-FROM vpemfh7/hadoop-base
+FROM vpemfh7/hadoop-base:latest
 
 LABEL MAINTAINER "Pedro Horchulhack <pedrohorchulhack@gmail.com>"
 
@@ -10,7 +10,6 @@ VOLUME /hadoop/dfs/data
 # Spark worker settings
 ENV SPARK_WORKER_WEBUI_PORT=8081
 ENV SPARK_WORKER_LOG=/spark/logs
-# ENV SPARK_MASTER="spark://spark-master:7077"
 
 # HDFS Datanode port
 EXPOSE 9864 

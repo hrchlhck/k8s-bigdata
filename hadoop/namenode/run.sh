@@ -32,7 +32,7 @@ create_config "SPARK" ${CONFIG_DIR}/spark.conf
 set -m
 
 # Starts namenode
-$HADOOP_HOME/bin/hdfs namenode -format
+$HADOOP_HOME/bin/hdfs namenode -format 
 $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode &
 
 # Starts Spark master

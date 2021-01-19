@@ -7,29 +7,16 @@ ENV HDFS_CONF_dfs_namenode_name_dir=file:///hadoop/dfs/name
 RUN mkdir -p /hadoop/dfs/name
 VOLUME /hadoop/dfs/name
 
-EXPOSE 9870 9000
-
 # Spark
-ENV SPARK_VERSION=3.0.0
-ENV HADOOP_VERSION=3.2
-
-RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
-    && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && cd /
-
-ENV PYTHONHASHSEED=1
-
 ENV SPARK_MASTER_PORT=7077
 ENV SPARK_MASTER_WEBUI_PORT=8080
 ENV SPARK_MASTER_LOG=/spark/logs
-
-EXPOSE 8080 7077 6066
+ENV SPARK_HOME=/spark
 
 # HiBench
+ENV CONF=/HiBench/scripts
 ENV HIBENCH_VERSION=7.1.1
-RUN apt update && apt install zip -y \
+RUN apt update && apt install -y zip bc \
     && wget https://github.com/Intel-bigdata/HiBench/archive/v${HIBENCH_VERSION}.zip \
     && unzip v${HIBENCH_VERSION}.zip -d /HiBench \
     && rm v${HIBENCH_VERSION}.zip \
@@ -43,9 +30,6 @@ RUN mkdir /scripts \
     && mvn -Psparkbench -Dmodules -Pmicro package \
     && cd /
 
-ENV CONF=/HiBench/scripts
-ENV SPARK_HOME=/spark
-
 ADD create_hibench_config.py ${CONF}/create_hibench_config.py
 ADD hadoop.env ${CONF}/hadoop.env
 ADD spark.env ${CONF}/spark.env
@@ -53,6 +37,8 @@ ADD spark.env ${CONF}/spark.env
 # Execution
 ADD run.sh /
 RUN chmod a+x /run.sh
+
+EXPOSE 9870 9000 8080 7077 6066
 
 CMD ["/run.sh"]
 
