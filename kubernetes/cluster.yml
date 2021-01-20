@@ -158,7 +158,7 @@ spec:
         - containerPort: 8030
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: datanode
   labels:
@@ -167,10 +167,11 @@ spec:
   selector:
     matchLabels:
       app: datanode
+  replicas: 3
   template:
     metadata:
       labels:
-        app: datanode
+        app: datanode  
     spec:
       containers:
         - image: vpemfh7/hadoop-datanode
@@ -198,3 +199,4 @@ spec:
             value: "namenode:9870 namenode:9000 resourcemanager:8088 $(POD_NAME):9864"
       volumes:
         - name: vol
+  

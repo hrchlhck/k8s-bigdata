@@ -28,11 +28,16 @@ function bench() {
 	done
 }
 
+# This section is supposed to add all datanodes names to /etc/hosts of resourcemanager pod.
 # WIP solution. Refer to issue #4 on https://github.com/hrchlhck/k8s-bigdata
-DATANODE=`kubectl get pods --no-headers --selector=app=datanode --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'`
-DATANODE_IP=`kubectl get pods $DATANODE --template={{.status.podIP}}`
-# podexec resourcemanager resourcemanager "echo $DATANODE_IP $DATANODE >> /etc/hosts"
-# podexec resourcemanager resourcemanager 'cat /etc/hosts'
+DATANODES=($(kubectl get pods -o wide --no-headers | awk '{if ($1 ~ /datanode/) {print ($1","$6)};}'))
+for datanode in "${DATANODES[@]}"; do
+	name=$(echo $datanode | awk '{split($1, a, ","); print a[1]}')
+	ip=$(echo $datanode | awk '{split($1, a, ","); print a[2]}')
+	kubectl exec -it resourcemanager -- /bin/bash -c "echo -e ${name} ${ip} >> /etc/hosts"
+done
+
+podexec resourcemanager resourcemanager 'cat /etc/hosts'
 
 bench $@
 save_bench_files
