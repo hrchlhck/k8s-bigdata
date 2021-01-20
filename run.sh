@@ -34,7 +34,7 @@ DATANODES=($(kubectl get pods -o wide --no-headers | awk '{if ($1 ~ /datanode/) 
 for datanode in "${DATANODES[@]}"; do
 	name=$(echo $datanode | awk '{split($1, a, ","); print a[1]}')
 	ip=$(echo $datanode | awk '{split($1, a, ","); print a[2]}')
-	kubectl exec -it resourcemanager -- /bin/bash -c "echo -e ${name} ${ip} >> /etc/hosts"
+	kubectl exec -it resourcemanager -- /bin/bash -c "echo -e ${ip} ${name} >> /etc/hosts"
 done
 
 podexec resourcemanager resourcemanager 'cat /etc/hosts'
