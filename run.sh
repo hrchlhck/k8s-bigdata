@@ -42,26 +42,23 @@ function has_host() {
 	local host=$1
 	local pod=$2
 	local container=$3
-	
+	local ret=0
 	if [[ $container ]]; then
 		# Return true if a container inside a pod has host $host 
-		echo "Executing for pod that has multiple containers"
 		if [[ $(podexec $pod $container 'cat /etc/hosts' | grep $host) ]]; then
-			return 1	
-		else
-			return 0
+			ret=1	
 		fi
 	else
 		# Return true if the only container in the pod has host $host
-		echo "Executing for single container pod"
 		if [[ $(podexec $pod $pod  'cat /etc/hosts' | grep $host) ]]; then
-			return 1
-		else
-			return 0
+			ret=1
 		fi
-	fi	
+	fi
+	return "$ret"
 
 }
+
+
 
 # This section is supposed to add all datanodes names to /etc/hosts of resourcemanager pod.
 # WIP solution. Refer to issue #4 on https://github.com/hrchlhck/k8s-bigdata
@@ -77,7 +74,11 @@ function add_host() {
 		if [[ $pod_name == "datanodes" ]]; then
 			for _datanode in "${datanodes[@]}"; do
 				_name=$(echo $_datanode | awk '{split($1, a, ","); print a[1]}')
-				if [[ ! `has_host $name $_name nodemanager` || ! `has_host $name $_name datanode` ]]; then
+				has_host $name $_name nodemanager
+				ret1=$?
+				has_host $name $_name datanode
+				ret2=$?
+				if [[ $ret1 == 0 || $ret2 == 0 ]]; then
 					echo "Adding $ip $name to $_name"
 					kubectl exec -it $_name -c datanode -- /bin/bash -c "echo -e ${ip} ${name} >> /etc/hosts"
 					kubectl exec -it $_name -c nodemanager -- /bin/bash -c "echo -e ${ip} ${name} >> /etc/hosts"
@@ -86,7 +87,9 @@ function add_host() {
 				fi
 			done
 		else
-			if [[ ! `has_host $name $pod_name` ]]; then
+			has_host $name $pod_name
+			ret=$?
+			if [[ $ret == 0 ]]; then
 				echo "Adding $ip $name to $pod_name"
 				kubectl exec -it $pod_name -- /bin/bash -c "echo -e ${ip} ${name} >> /etc/hosts"
 			else
@@ -96,13 +99,14 @@ function add_host() {
 	done
 }
 
+
 add_host resourcemanager
 add_host namenode
 add_host historyserver
 add_host datanodes
 
-bench micro wordcount
-# bench micro terasort
+#bench micro wordcount
+#bench micro terasort
 # bench micro dfsioe
 # bench websearch pagerank
 save_bench_files
