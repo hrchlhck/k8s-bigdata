@@ -89,7 +89,7 @@ metadata:
 spec:
   volumes:
     - name: vol
-  nodeName: hrck
+  nodeName: ubuntu
   containers:
   - name: namenode
     image: vpemfh7/hadoop-namenode
@@ -120,7 +120,7 @@ metadata:
   labels: 
     app: historyserver
 spec:
-  nodeName: hrck
+  nodeName: ubuntu
   containers:
     - image: vpemfh7/hadoop-historyserver
       name: historyserver
@@ -144,7 +144,7 @@ metadata:
   labels: 
     app: resourcemanager
 spec:
-  nodeName: hrck
+  nodeName: ubuntu
   containers:
     - image: vpemfh7/hadoop-resourcemanager
       name: resourcemanager
@@ -158,7 +158,7 @@ spec:
         - containerPort: 8030
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: datanode
   labels:
@@ -166,8 +166,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: datanode
-  replicas: 3
+      app: datanode 
   template:
     metadata:
       labels:
@@ -190,6 +189,8 @@ spec:
             - containerPort: 9864
         - image: vpemfh7/hadoop-nodemanager
           name: nodemanager
+          ports:
+            - containerPort: 45454
           env:
           - name: POD_NAME
             valueFrom:
