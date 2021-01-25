@@ -101,7 +101,6 @@ add_host namenode
 add_host historyserver
 add_host datanodes
 
-
 bench micro wordcount
 # bench micro terasort
 # bench micro dfsioe
