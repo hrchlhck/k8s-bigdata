@@ -27,7 +27,7 @@ ADD pom.xml /
 RUN mkdir /scripts \
     && mv /pom.xml /hibench/sparkbench/pom.xml \
     && cd /hibench \
-    && mvn -Psparkbench -Dmodules -Pmicro package \
+    && mvn -Psparkbench -Dmodules -Pmicro -Pwebsearch clean package \
     && cd /
 
 ADD create_hibench_config.py ${CONF}/create_hibench_config.py
