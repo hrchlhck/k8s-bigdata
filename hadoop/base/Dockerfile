@@ -20,7 +20,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 # HDFS
 RUN curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS && gpg --import KEYS
 
-ENV HADOOP_VERSION=3.2.1
+ENV HADOOP_VERSION=2.7.0
 ENV HADOOP_URL=https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz
 
 RUN set -x \
@@ -42,14 +42,15 @@ ENV USER=root
 ENV PATH $HADOOP_HOME/bin/:$PATH
 
 # Apache Spark
-ENV SPARK_VERSION=3.0.0
-ENV HADOOP_VERSION=3.2
+ENV SPARK_VERSION=2.4.7
+ENV HADOOP_VERSION=2.7
 ENV PYTHONHASHSEED=1
 
-RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-    && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
-    && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+ENV SPARK_FILE=spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_FILE}.tgz \
+    && tar -xvzf ${SPARK_FILE}.tgz \
+    && mv ${SPARK_FILE} spark \
+    && rm ${SPARK_FILE}.tgz \
     && cd /
 
 ADD entrypoint.sh /
