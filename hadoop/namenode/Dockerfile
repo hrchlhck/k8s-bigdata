@@ -23,11 +23,9 @@ RUN apt update && apt install -y zip bc \
     && mv /HiBench/ /etc/HiBench/ \
     && ln -sf /etc/HiBench/HiBench-${HIBENCH_VERSION}/ /hibench
 
-ADD pom.xml /
 RUN mkdir /scripts \
-    && mv /pom.xml /hibench/sparkbench/pom.xml \
     && cd /hibench \
-    && mvn -Psparkbench -Dmodules -Pmicro -Pwebsearch clean package \
+    && mvn -Psparkbench -Dmodules -Pmicro -Pml -Pwebsearch clean package \
     && cd /
 
 ADD create_hibench_config.py ${CONF}/create_hibench_config.py
