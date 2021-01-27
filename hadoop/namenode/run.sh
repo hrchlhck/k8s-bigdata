@@ -36,6 +36,7 @@ $HADOOP_HOME/bin/hdfs namenode -format
 $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode &
 
 # Starts Spark master
+export SPARK_DIST_CLASSPATH=$(hadoop --config $HADOOP_CONF_DIR  classpath)
 export SPARK_HOME=/spark
 export SPARK_MASTER_HOST=`hostname`
 

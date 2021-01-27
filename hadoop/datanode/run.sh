@@ -5,6 +5,7 @@ $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR datanode &
 
 # Spark worker
 export SPARK_HOME=/spark
+export SPARK_DIST_CLASSPATH=$(hadoop --config $HADOOP_CONF_DIR classpath)
 
 . "/spark/sbin/spark-config.sh"
 
