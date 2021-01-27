@@ -126,7 +126,7 @@ spec:
       name: historyserver
       env:
       - name: SERVICE_PRECONDITION
-        value: "namenode:9870 namenode:9000 resourcemanager:8088"
+        value: "namenode:50070 namenode:9000 resourcemanager:8088"
       ports:
         - containerPort: 8188
         - containerPort: 19888
@@ -150,7 +150,7 @@ spec:
       name: resourcemanager
       env:
       - name: SERVICE_PRECONDITION
-        value: "namenode:9870 namenode:9000"
+        value: "namenode:50070 namenode:9000"
       ports:
         - containerPort: 8088
         - containerPort: 8031
@@ -179,14 +179,14 @@ spec:
           - name: SPARK_MASTER
             value: "spark://namenode:7077"
           - name: SERVICE_PRECONDITION
-            value: "namenode:9870 namenode:9000 namenode:8080"
+            value: "namenode:50070 namenode:9000 namenode:8080"
           volumeMounts:
             - mountPath: /hadoop/dfs/data
               name: vol 
           ports:
             - containerPort: 8081
             - containerPort: 4040
-            - containerPort: 9864
+            - containerPort: 50020
         - image: vpemfh7/hadoop-nodemanager
           name: nodemanager
           ports:
@@ -197,7 +197,7 @@ spec:
               fieldRef:
                 fieldPath: metadata.name
           - name: SERVICE_PRECONDITION
-            value: "namenode:9870 namenode:9000 resourcemanager:8088 $(POD_NAME):9864"
+            value: "namenode:50070 namenode:9000 resourcemanager:8088 $(POD_NAME):50020"
       volumes:
         - name: vol
   
