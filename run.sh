@@ -18,6 +18,7 @@ function prepare() {
 # Saves the HiBench report files into the host
 function save_bench_files() {
 	podexec namenode namenode "cat /hibench/report/hibench.report" > ./hibench.report
+	podexec namenode namenode "cat /hibench/report/$1/prepare/bench.log" > ./$1-bench.log
 }
 
 # Does the benchmark. Can specify N benchmarks to be executed inside namenode pod.
@@ -99,14 +100,26 @@ function add_host() {
 	done
 }
 
-
+################
+## NETWORKING ##
+################
 add_host resourcemanager
 add_host namenode
 add_host historyserver
 add_host datanodes
 
-#bench micro wordcount
-#bench micro terasort
-# bench micro dfsioe
-# bench websearch pagerank
+################
+## BENCHMARKS ##
+################
+bench micro wordcount
+bench micro terasort
+bench micro dfsioe
+bench websearch pagerank
+
+# Machine Learning using Random Forest
+bench ml rf 
+
+#######################
+## BENCHMARK RESULTS ##
+######################
 save_bench_files
