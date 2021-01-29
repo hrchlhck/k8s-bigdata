@@ -5,19 +5,6 @@ set -e
 TAG=latest
 
 ### FUNCTIONS ###
-# Check if line arguments has an argument. 
-# Refer to: https://stackoverflow.com/a/56431189/12238188
-function has_param() {
-	local flag=$1
-	shift
-	for arg; do
-		if [[ $arg == "$term" ]]; then
-			return 0	
-		fi
-	done
-	return 1
-}
-
 # Build a docker image
 function docker_build() {
     local name=$1
@@ -64,7 +51,7 @@ function push_all() {
 # The command above will build Dockerfiles inside ./hibench and ./namenode
 
 build_all "-S" "hadoop" 
-push_all "vpemfh7" "hadoop"
+# push_all "vpemfh7" "hadoop"
 #for dockerimage in $@; do
 #    docker_push $dockerimage
 #done
