@@ -89,7 +89,15 @@ metadata:
 spec:
   volumes:
     - name: vol
-  nodeName: ubuntu
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: type
+            operator: In
+            values:
+            - master
   containers:
   - name: namenode
     image: vpemfh7/hadoop-namenode
@@ -120,7 +128,15 @@ metadata:
   labels: 
     app: historyserver
 spec:
-  nodeName: ubuntu
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: type
+            operator: In
+            values:
+            - master
   containers:
     - image: vpemfh7/hadoop-historyserver
       name: historyserver
@@ -144,7 +160,15 @@ metadata:
   labels: 
     app: resourcemanager
 spec:
-  nodeName: ubuntu
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: type
+            operator: In
+            values:
+            - master
   containers:
     - image: vpemfh7/hadoop-resourcemanager
       name: resourcemanager
