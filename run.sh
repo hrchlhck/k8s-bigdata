@@ -18,7 +18,7 @@ function prepare() {
 # Saves the HiBench report files into the host
 function save_bench_files() {
 	podexec namenode namenode "cat /hibench/report/hibench.report" > ./hibench.report
-	podexec namenode namenode "cat /hibench/report/$1/prepare/bench.log" > ./$1-bench.log
+	# podexec namenode namenode "cat /hibench/report/$1/prepare/bench.log" > ./$1-bench.log
 }
 
 # Does the benchmark. Can specify N benchmarks to be executed inside namenode pod.
