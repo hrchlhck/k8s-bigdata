@@ -100,6 +100,15 @@ function add_host() {
 	done
 }
 
+function set_benchmark_input_size() {
+	local size=$1
+	kubectl exec -it namenode -- sed -i "s/hibench.scale.profile.*/hibench.scale.profile $size/" /hibench/conf/hibench.conf
+}
+
+function clear_hdfs() {
+	podexec namenode namenode "hadoop fs -rm -r /HiBench"
+}
+
 ################
 ## NETWORKING ##
 ################
@@ -107,6 +116,7 @@ add_host resourcemanager
 add_host namenode
 add_host historyserver
 add_host datanodes
+set_benchmark_input_size $1
 
 ################
 ## BENCHMARKS ##
@@ -123,3 +133,4 @@ bench ml rf
 ## BENCHMARK RESULTS ##
 ######################
 save_bench_files
+clear_hdfs
