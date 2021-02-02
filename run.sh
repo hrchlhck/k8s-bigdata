@@ -105,6 +105,10 @@ function set_benchmark_input_size() {
 	kubectl exec -it namenode -- sed -i "s/hibench.scale.profile.*/hibench.scale.profile $size/" /hibench/conf/hibench.conf
 }
 
+function rm_prev_report() {
+	podexec namenode namenode "rm /hibench/report/hibench.report"
+}
+
 function clear_hdfs() {
 	podexec namenode namenode "hadoop fs -rm -r /HiBench"
 }
@@ -134,3 +138,4 @@ bench ml rf
 ######################
 save_bench_files
 clear_hdfs
+rm_prev_report
