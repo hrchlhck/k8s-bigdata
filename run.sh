@@ -100,17 +100,35 @@ function add_host() {
 	done
 }
 
+# Change hibench.conf inside 'namenode' pod with the desired workload size. 
+# Supported workload sizes:
+#     - tiny
+#     - small
+#     - large
+#     - huge
+#     - gigantic
+#     - bigdata
 function set_benchmark_input_size() {
 	local size=$1
 	kubectl exec -it namenode -- sed -i "s/hibench.scale.profile.*/hibench.scale.profile $size/" /hibench/conf/hibench.conf
 }
 
+# Removes previous hibench.report files present on 'namenode' pod
 function rm_prev_report() {
 	podexec namenode namenode "rm /hibench/report/hibench.report"
 }
 
+# Deletes HiBench generated input from HDFS
 function clear_hdfs() {
 	podexec namenode namenode "hadoop fs -rm -r /HiBench"
+}
+
+# Used to trap ctrl+c and/or when the program ends
+function finish() {
+	echo -e "Ending"
+	save_bench_files
+	clear_hdfs
+	rm_prev_report
 }
 
 ################
@@ -125,7 +143,7 @@ set_benchmark_input_size $1
 ################
 ## BENCHMARKS ##
 ################
-bench micro wordcount
+bench micro wordcount 
 bench micro terasort
 bench micro dfsioe
 bench websearch pagerank
@@ -133,9 +151,4 @@ bench websearch pagerank
 # Machine Learning using Random Forest
 bench ml rf 
 
-#######################
-## BENCHMARK RESULTS ##
-######################
-save_bench_files
-clear_hdfs
-rm_prev_report
+finish
