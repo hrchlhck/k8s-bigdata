@@ -13,6 +13,7 @@ RUN apt update && apt install -y \
       wget \
       libc6 \
       netcat \
+      procps \
     && rm -rf /var/lib/apt/lists/*
       
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
