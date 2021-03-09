@@ -219,6 +219,8 @@ spec:
             value: "spark://namenode:7077"
           - name: SERVICE_PRECONDITION
             value: "namenode:50070 namenode:9000 namenode:8080"
+          - name: NUM_CORES
+            value: "4"
           volumeMounts:
             - mountPath: /hadoop/dfs/data
               name: vol 
