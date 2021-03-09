@@ -2,7 +2,9 @@
 Apache Spark with HDFS cluster within Kubernetes.
 
 ### Overview
-As the description says, this repository is a Apache Spark with HDFS cluster within Kubernetes. Although, it contains [Intel HiBench](https://github.com/Intel-bigdata/HiBench) benchmark suit for testing CPU, IO and network usage, but the cluster can be used as a regular one.
+As the description says, this repository is a Apache Spark with HDFS cluster within Kubernetes. Although, it contains [Intel HiBench](https://github.com/Intel-bigdata/HiBench) benchmark suit for testing CPU, IO and network usage, but the cluster can be used as a regular one. 
+
+You can submit the cluster by typing: `kubectl apply -f https://raw.githubusercontent.com/hrchlhck/k8s-bigdata/master/kubernetes/cluster.yml`
 
 ### Supported HiBench Workloads
 - Micro
