@@ -4,8 +4,6 @@ Apache Spark with HDFS cluster within Kubernetes.
 ### Overview
 As the description says, this repository is a Apache Spark with HDFS cluster within Kubernetes. Although, it contains [Intel HiBench](https://github.com/Intel-bigdata/HiBench) benchmark suit for testing CPU, IO and network usage, but the cluster can be used as a regular one. 
 
-You can submit the cluster by typing: `kubectl apply -f https://raw.githubusercontent.com/hrchlhck/k8s-bigdata/master/kubernetes/cluster.yml`
-
 ### Supported HiBench Workloads
 - Micro
 - Machine Learning
@@ -17,19 +15,15 @@ You can just simply execute the `build.sh` file.
 $ ./build.sh
 ```
 
+### Submiting the cluster
+To submit the cluster and prepare it, you must type the following `./scripts/init-cluster.sh <WORKLOAD> <BENCHMARK> <INPUT_SIZE>`
+Where:
+1. `WORKLOAD` represents a workload from [HiBench](https://github.com/Intel-bigdata/HiBench)
+2. `BENCHMARK` represents the benchmark 
+3. `INPUT_SIZE` means the size of the workload for the benchmark
+
 ### Running HiBench
-If you want to execute HiBench workloads, just refer to `run.sh` and specify which workload you want to execute. Example:
-In `run.sh`
-```sh
-################
-## BENCHMARKS ##
-################
-# Syntax: bench <WORKLOAD> <BENCHMARK>
-bench micro wordcount
-bench micro terasort
-bench micro dfsioe
-bench websearch pagerank
-```
+To run a [HiBench](https://github.com/Intel-bigdata/HiBench) benchmark, you can run `./scripts/run.sh <WORKLOAD> <BENCHMARK>`
 The report will be saved in the base directory with the name `hibench.report`.
 
 ### Features
