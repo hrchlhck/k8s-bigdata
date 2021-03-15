@@ -4,7 +4,7 @@ WORKLOAD=$1
 BENCHMARK=$2
 
 # Load functions
-. functions.sh
+. "$(dirname "$0")/functions.sh"
 
 ################
 ## BENCHMARK ##
