@@ -51,7 +51,7 @@ function push_all() {
 # The command above will build Dockerfiles inside ./hibench and ./namenode
 
 build_all "-S" "hadoop" 
-# push_all "vpemfh7" "hadoop"
-#for dockerimage in $@; do
-#    docker_push $dockerimage
-#done
+ push_all "vpemfh7" "hadoop"
+for dockerimage in $@; do
+    docker_push $dockerimage
+done
