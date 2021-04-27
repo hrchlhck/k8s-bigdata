@@ -26,6 +26,12 @@ create_config "HDFS_CONF" ${HADOOP_CONFIG}/hdfs-site.xml
 create_config "YARN_CONF" ${HADOOP_CONFIG}/yarn-site.xml
 create_config "MAPRED_CONF" ${HADOOP_CONFIG}/mapred-site.xml
 
+cp /spark/conf/spark-defaults.conf.template /spark/conf/spark-defaults.conf
+cp /spark/conf/spark-env.sh.template /spark/conf/spark-env.sh
+
+echo spark.executor.cores $SPARK_NUM_CORES >> /spark/conf/spark-defaults.conf
+echo SPARK_WORKER_CORES=$SPARK_NUM_CORES >> /spark/conf/spark-env.sh
+
 # https://github.com/big-data-europe/docker-hadoop/blob/master/base/entrypoint.sh
 function wait_for_it()
 {

@@ -140,6 +140,8 @@ spec:
       value: historyserver:10020
     - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
       value: historyserver:19888
+    - name: SPARK_NUM_CORES
+      value: "8"
     ports:
       - containerPort: 9870
       - containerPort: 9000
@@ -293,7 +295,8 @@ spec:
             value: historyserver:10020
           - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
             value: historyserver:19888
-
+          - name: SPARK_NUM_CORES
+            value: "8"
           volumeMounts:
             - mountPath: /hadoop/dfs/data
               name: vol 
