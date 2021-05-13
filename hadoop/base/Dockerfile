@@ -42,18 +42,6 @@ ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV USER=root
 ENV PATH $HADOOP_HOME/bin/:$PATH
 
-# Apache Spark
-ENV SPARK_VERSION=2.4.7
-ENV HADOOP_VERSION=2.7
-ENV PYTHONHASHSEED=1
-
-ENV SPARK_FILE=spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
-RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_FILE}.tgz \
-    && tar -xvzf ${SPARK_FILE}.tgz \
-    && mv ${SPARK_FILE} spark \
-    && rm ${SPARK_FILE}.tgz \
-    && cd /
-
 ADD entrypoint.sh /
 ADD create_config.py /
 ADD hadoop.env /
