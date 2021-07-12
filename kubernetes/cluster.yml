@@ -153,6 +153,91 @@ spec:
       - name: vol
         mountPath: /hadoop/dfs/name
 ---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: datanode
+  namespace: k8s-bigdata
+  labels:
+    app: datanode
+spec:
+  selector:
+    matchLabels:
+      app: datanode 
+  template:
+    metadata:
+      labels:
+        app: datanode  
+    spec:
+      containers:
+        - image: vpemfh7/hadoop-datanode
+          name: datanode
+          env:
+          - name: CORE_CONF_fs_defaultFS
+            value: "hdfs://namenode:9000"
+          - name: SPARK_MASTER
+            value: "spark://namenode:7077"
+          - name: SERVICE_PRECONDITION
+            value: "namenode:50070 namenode:9000 namenode:8080"
+          - name: NUM_CORES
+            value: "4"
+          - name: YARN_CONF_yarn_log_server_url
+            value: https://historyserver:8188/applicationhistory/logs/
+          - name: YARN_CONF_yarn_resourcemanager_hostname
+            value: resourcemanager
+          - name: YARN_CONF_yarn_resourcemanager_address
+            value: resourcemanager:8032
+          - name: YARN_CONF_yarn_resourcemanager_scheduler_address
+            value: resourcemanager:8030
+          - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
+            value: resourcemanager:8031
+          - name: YARN_CONF_yarn_timeline___service_hostname
+            value: historyserver
+          - name: MAPRED_CONF_mapreduce_jobhistory_address
+            value: historyserver:10020
+          - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
+            value: historyserver:19888
+          - name: SPARK_NUM_CORES
+            value: "8"
+          volumeMounts:
+            - mountPath: /hadoop/dfs/data
+              name: vol 
+          ports:
+            - containerPort: 8081
+            - containerPort: 4040
+            - containerPort: 50020
+        - image: vpemfh7/hadoop-nodemanager
+          name: nodemanager
+          ports:
+            - containerPort: 45454
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: CORE_CONF_fs_defaultFS
+            value: "hdfs://namenode:9000" 
+          - name: SERVICE_PRECONDITION
+            value: "namenode:50070 namenode:9000 resourcemanager:8088 $(POD_NAME):50020"
+          - name: YARN_CONF_yarn_log_server_url
+            value: https://historyserver:8188/applicationhistory/logs/
+          - name: YARN_CONF_yarn_resourcemanager_hostname
+            value: resourcemanager
+          - name: YARN_CONF_yarn_resourcemanager_address
+            value: resourcemanager:8032
+          - name: YARN_CONF_yarn_resourcemanager_scheduler_address
+            value: resourcemanager:8030
+          - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
+            value: resourcemanager:8031
+          - name: YARN_CONF_yarn_timeline___service_hostname
+            value: historyserver
+          - name: MAPRED_CONF_mapreduce_jobhistory_address
+            value: historyserver:10020
+          - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
+            value: historyserver:19888
+      volumes:
+        - name: vol
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -250,89 +335,3 @@ spec:
         - containerPort: 8031
         - containerPort: 8032
         - containerPort: 8030
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: datanode
-  namespace: k8s-bigdata
-  labels:
-    app: datanode
-spec:
-  selector:
-    matchLabels:
-      app: datanode 
-  template:
-    metadata:
-      labels:
-        app: datanode  
-    spec:
-      containers:
-        - image: vpemfh7/hadoop-datanode
-          name: datanode
-          env:
-          - name: CORE_CONF_fs_defaultFS
-            value: "hdfs://namenode:9000"
-          - name: SPARK_MASTER
-            value: "spark://namenode:7077"
-          - name: SERVICE_PRECONDITION
-            value: "namenode:50070 namenode:9000 namenode:8080"
-          - name: NUM_CORES
-            value: "4"
-          - name: YARN_CONF_yarn_log_server_url
-            value: https://historyserver:8188/applicationhistory/logs/
-          - name: YARN_CONF_yarn_resourcemanager_hostname
-            value: resourcemanager
-          - name: YARN_CONF_yarn_resourcemanager_address
-            value: resourcemanager:8032
-          - name: YARN_CONF_yarn_resourcemanager_scheduler_address
-            value: resourcemanager:8030
-          - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
-            value: resourcemanager:8031
-          - name: YARN_CONF_yarn_timeline___service_hostname
-            value: historyserver
-          - name: MAPRED_CONF_mapreduce_jobhistory_address
-            value: historyserver:10020
-          - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
-            value: historyserver:19888
-          - name: SPARK_NUM_CORES
-            value: "8"
-          volumeMounts:
-            - mountPath: /hadoop/dfs/data
-              name: vol 
-          ports:
-            - containerPort: 8081
-            - containerPort: 4040
-            - containerPort: 50020
-        - image: vpemfh7/hadoop-nodemanager
-          name: nodemanager
-          ports:
-            - containerPort: 45454
-          env:
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: CORE_CONF_fs_defaultFS
-            value: "hdfs://namenode:9000" 
-          - name: SERVICE_PRECONDITION
-            value: "namenode:50070 namenode:9000 resourcemanager:8088 $(POD_NAME):50020"
-          - name: YARN_CONF_yarn_log_server_url
-            value: https://historyserver:8188/applicationhistory/logs/
-          - name: YARN_CONF_yarn_resourcemanager_hostname
-            value: resourcemanager
-          - name: YARN_CONF_yarn_resourcemanager_address
-            value: resourcemanager:8032
-          - name: YARN_CONF_yarn_resourcemanager_scheduler_address
-            value: resourcemanager:8030
-          - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
-            value: resourcemanager:8031
-          - name: YARN_CONF_yarn_timeline___service_hostname
-            value: historyserver
-          - name: MAPRED_CONF_mapreduce_jobhistory_address
-            value: historyserver:10020
-          - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
-            value: historyserver:19888
-      volumes:
-        - name: vol
-  
