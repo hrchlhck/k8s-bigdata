@@ -61,7 +61,7 @@ function set_benchmark_input_size() {
 
 # Saves the HiBench report files into the host
 function save_bench_files() {
-	podexec namenode namenode "cat /hibench/report/hibench.report" > ./hibench.report
+	podexec namenode namenode "cat /hibench/report/hibench.report" >> ./hibench.report
 }
 
 # Does the benchmark. Can specify N benchmarks to be executed inside namenode pod.
