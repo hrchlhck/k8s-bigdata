@@ -34,6 +34,10 @@ ADD create_hibench_config.py ${CONF}/create_hibench_config.py
 ADD hadoop.env ${CONF}/hadoop.env
 ADD spark.env ${CONF}/spark.env
 
+COPY hibench_conf/sort.conf /hibench/conf/workloads/micro/sort.conf
+COPY hibench_conf/terasort.conf /hibench/conf/workloads/micro/terasort.conf
+COPY hibench_conf/wordcount.conf /hibench/conf/workloads/micro/wordcount.conf
+
 # Execution
 ADD run.sh /
 RUN chmod a+x /run.sh
