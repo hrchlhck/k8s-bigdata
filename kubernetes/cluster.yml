@@ -6,6 +6,25 @@ metadata:
     name: k8s-bigdata
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hadoop-env
+  namespace: k8s-bigdata
+data:
+  YARN_CONF_yarn_log_server_url: https://historyserver:8188/applicationhistory/logs/
+  YARN_CONF_yarn_resourcemanager_hostname: resourcemanager
+  YARN_CONF_yarn_resourcemanager_address: resourcemanager:8032
+  YARN_CONF_yarn_resourcemanager_scheduler_address: resourcemanager:8030
+  YARN_CONF_yarn_resourcemanager_resource__tracker_address: resourcemanager:8031
+  YARN_CONF_yarn_timeline___service_hostname: historyserver
+  MAPRED_CONF_mapreduce_jobhistory_address: historyserver:10020
+  MAPRED_CONF_mapreduce_jobhistory_webapp_address: historyserver:19888
+  SPARK_NUM_CORES: "8"
+  CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
+  SPARK_MASTER: "spark://namenode:7077"
+  HADOOP_URL: "hdfs://namenode:9000"
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: namenode
@@ -101,47 +120,12 @@ metadata:
 spec:
   volumes:
     - name: vol
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: type
-            operator: In
-            values:
-            - master
   containers:
   - name: namenode
     image: vpemfh7/hadoop-namenode
-    env:
-    - name: POD_NAME
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.name
-    - name: CORE_CONF_fs_defaultFS
-      value: "hdfs://$(POD_NAME):9000"
-    - name: SPARK_MASTER
-      value: "spark://$(POD_NAME):7077"
-    - name: HADOOP_URL
-      value: "hdfs://$(POD_NAME):9000"
-    - name: YARN_CONF_yarn_log_server_url
-      value: https://historyserver:8188/applicationhistory/logs/
-    - name: YARN_CONF_yarn_resourcemanager_hostname
-      value: resourcemanager
-    - name: YARN_CONF_yarn_resourcemanager_address
-      value: resourcemanager:8032
-    - name: YARN_CONF_yarn_resourcemanager_scheduler_address
-      value: resourcemanager:8030
-    - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
-      value: resourcemanager:8031
-    - name: YARN_CONF_yarn_timeline___service_hostname
-      value: historyserver
-    - name: MAPRED_CONF_mapreduce_jobhistory_address
-      value: historyserver:10020
-    - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
-      value: historyserver:19888
-    - name: SPARK_NUM_CORES
-      value: "8"
+    envFrom:
+    - configMapRef:
+        name: hadoop-env
     ports:
       - containerPort: 9870
       - containerPort: 9000
@@ -173,32 +157,13 @@ spec:
         - image: vpemfh7/hadoop-datanode
           name: datanode
           env:
-          - name: CORE_CONF_fs_defaultFS
-            value: "hdfs://namenode:9000"
-          - name: SPARK_MASTER
-            value: "spark://namenode:7077"
           - name: SERVICE_PRECONDITION
             value: "namenode:50070 namenode:9000 namenode:8080"
           - name: NUM_CORES
             value: "4"
-          - name: YARN_CONF_yarn_log_server_url
-            value: https://historyserver:8188/applicationhistory/logs/
-          - name: YARN_CONF_yarn_resourcemanager_hostname
-            value: resourcemanager
-          - name: YARN_CONF_yarn_resourcemanager_address
-            value: resourcemanager:8032
-          - name: YARN_CONF_yarn_resourcemanager_scheduler_address
-            value: resourcemanager:8030
-          - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
-            value: resourcemanager:8031
-          - name: YARN_CONF_yarn_timeline___service_hostname
-            value: historyserver
-          - name: MAPRED_CONF_mapreduce_jobhistory_address
-            value: historyserver:10020
-          - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
-            value: historyserver:19888
-          - name: SPARK_NUM_CORES
-            value: "8"
+          envFrom:
+          - configMapRef:
+              name: hadoop-env
           volumeMounts:
             - mountPath: /hadoop/dfs/data
               name: vol 
@@ -215,26 +180,11 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
-          - name: CORE_CONF_fs_defaultFS
-            value: "hdfs://namenode:9000" 
           - name: SERVICE_PRECONDITION
             value: "namenode:50070 namenode:9000 resourcemanager:8088 $(POD_NAME):50020"
-          - name: YARN_CONF_yarn_log_server_url
-            value: https://historyserver:8188/applicationhistory/logs/
-          - name: YARN_CONF_yarn_resourcemanager_hostname
-            value: resourcemanager
-          - name: YARN_CONF_yarn_resourcemanager_address
-            value: resourcemanager:8032
-          - name: YARN_CONF_yarn_resourcemanager_scheduler_address
-            value: resourcemanager:8030
-          - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
-            value: resourcemanager:8031
-          - name: YARN_CONF_yarn_timeline___service_hostname
-            value: historyserver
-          - name: MAPRED_CONF_mapreduce_jobhistory_address
-            value: historyserver:10020
-          - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
-            value: historyserver:19888
+          envFrom:
+          - configMapRef:
+              name: hadoop-env
       volumes:
         - name: vol
 ---
@@ -246,39 +196,15 @@ metadata:
   labels: 
     app: historyserver
 spec:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: type
-            operator: In
-            values:
-            - master
   containers:
     - image: vpemfh7/hadoop-historyserver
       name: historyserver
       env:
-      - name: CORE_CONF_fs_defaultFS
-        value: "hdfs://namenode:9000"
       - name: SERVICE_PRECONDITION
         value: "namenode:50070 namenode:9000 resourcemanager:8088"
-      - name: YARN_CONF_yarn_log_server_url
-        value: https://historyserver:8188/applicationhistory/logs/
-      - name: YARN_CONF_yarn_resourcemanager_hostname
-        value: resourcemanager
-      - name: YARN_CONF_yarn_resourcemanager_address
-        value: resourcemanager:8032
-      - name: YARN_CONF_yarn_resourcemanager_scheduler_address
-        value: resourcemanager:8030
-      - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
-        value: resourcemanager:8031
-      - name: YARN_CONF_yarn_timeline___service_hostname
-        value: historyserver
-      - name: MAPRED_CONF_mapreduce_jobhistory_address
-        value: historyserver:10020
-      - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
-        value: historyserver:19888
+      envFrom:
+      - configMapRef:
+          name: hadoop-env
       ports:
         - containerPort: 8188
         - containerPort: 19888
@@ -297,39 +223,15 @@ metadata:
   labels: 
     app: resourcemanager
 spec:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: type
-            operator: In
-            values:
-            - master
   containers:
     - image: vpemfh7/hadoop-resourcemanager
       name: resourcemanager
       env:
-      - name: CORE_CONF_fs_defaultFS
-        value: "hdfs://namenode:9000"
       - name: SERVICE_PRECONDITION
         value: "namenode:50070 namenode:9000"
-      - name: YARN_CONF_yarn_log_server_url
-        value: https://historyserver:8188/applicationhistory/logs/
-      - name: YARN_CONF_yarn_resourcemanager_hostname
-        value: resourcemanager
-      - name: YARN_CONF_yarn_resourcemanager_address
-        value: resourcemanager:8032
-      - name: YARN_CONF_yarn_resourcemanager_scheduler_address
-        value: resourcemanager:8030
-      - name: YARN_CONF_yarn_resourcemanager_resource__tracker_address
-        value: resourcemanager:8031
-      - name: YARN_CONF_yarn_timeline___service_hostname
-        value: historyserver
-      - name: MAPRED_CONF_mapreduce_jobhistory_address
-        value: historyserver:10020
-      - name: MAPRED_CONF_mapreduce_jobhistory_webapp_address
-        value: historyserver:19888
+      envFrom:
+      - configMapRef:
+          name: hadoop-env
       ports:
         - containerPort: 8088
         - containerPort: 8031
