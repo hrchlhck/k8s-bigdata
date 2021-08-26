@@ -19,7 +19,8 @@ data:
   YARN_CONF_yarn_timeline___service_hostname: historyserver
   MAPRED_CONF_mapreduce_jobhistory_address: historyserver:10020
   MAPRED_CONF_mapreduce_jobhistory_webapp_address: historyserver:19888
-  SPARK_NUM_CORES: "8"
+  SPARK_NUM_CORES: "4"
+  SPARK_DRIVER_MEMORY: "32g"
   CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
   SPARK_MASTER: "spark://namenode:7077"
   HADOOP_URL: "hdfs://namenode:9000"
@@ -33,6 +34,7 @@ spec:
   selector:
     app: namenode
   clusterIP: None
+  externalName: namenode
   ports:
     - name: web-ui
       port: 9870
@@ -59,6 +61,7 @@ spec:
     selector:
       app: resourcemanager
     clusterIP: None
+    externalName: resourcemanager
     ports:
       - name: yarn-web-ui
         port: 8088
@@ -82,6 +85,7 @@ spec:
   selector:
     app: historyserver
   clusterIP: None
+  externalName: historyserver
   ports:
     - name: web-ui
       port: 19888
@@ -138,13 +142,14 @@ spec:
         mountPath: /hadoop/dfs/name
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment 
 metadata:
   name: datanode
   namespace: k8s-bigdata
   labels:
     app: datanode
 spec:
+  replicas: 4
   selector:
     matchLabels:
       app: datanode 
@@ -222,7 +227,7 @@ metadata:
   namespace: k8s-bigdata
   labels: 
     app: resourcemanager
-spec:
+spec: 
   containers:
     - image: vpemfh7/hadoop-resourcemanager
       name: resourcemanager
@@ -237,3 +242,11 @@ spec:
         - containerPort: 8031
         - containerPort: 8032
         - containerPort: 8030
+      readinessProbe:
+        exec:
+          command:
+          - curl 
+          - -sI 
+          - datanode:8081
+        initialDelaySeconds: 3
+        periodSeconds: 2
