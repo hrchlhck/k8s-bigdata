@@ -41,6 +41,8 @@ add_host historyserver
 add_host datanodes
 add_host resourcemanager
 set_benchmark_input_size $INPUT_SIZE
+set_executor_memory "2g"
+set_executor_cores "4"
 
 sleep 30
 
