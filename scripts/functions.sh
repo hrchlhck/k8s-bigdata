@@ -58,10 +58,22 @@ function set_benchmark_input_size() {
 	kubectl exec -it namenode -n $NAMESPACE -- sed -i "s/hibench.scale.profile.*/hibench.scale.profile $size/" /hibench/conf/hibench.conf
 }
 
+# Function to set total memory of each executor on the spark cluster. Default number of executors is 2, so
+# the memory set is always N * 2 for each node.
+function set_executor_memory() {
+        local memory=$1
+        kubectl exec -it namenode -n k8s-bigdata -- /bin/bash -c "echo spark.executor.memory $memory >> /hibench/conf/spark.conf"
+}
+
+# Function to set the total number of executor cores of the cluster
+function set_executor_cores {
+	local cores=$1
+	kubectl exec -it namenode -n k8s-bigdata -- /bin/bash -c "echo spark.executor.cores $cores >> /hibench/conf/spark.conf"
+}
 
 # Saves the HiBench report files into the host
 function save_bench_files() {
-	podexec namenode namenode "cat /hibench/report/hibench.report" >> ./hibench.report
+	podexec namenode namenode "tail -n1 /hibench/report/hibench.report" >> ./hibench.report
 }
 
 # Does the benchmark. Can specify N benchmarks to be executed inside namenode pod.
