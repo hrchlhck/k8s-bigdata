@@ -37,6 +37,8 @@ ADD spark.env ${CONF}/spark.env
 COPY hibench_conf/sort.conf /hibench/conf/workloads/micro/sort.conf
 COPY hibench_conf/terasort.conf /hibench/conf/workloads/micro/terasort.conf
 COPY hibench_conf/wordcount.conf /hibench/conf/workloads/micro/wordcount.conf
+COPY hibench_conf/pagerank.conf /hibench/conf/workloads/websearch/pagerank.conf
+COPY hibench_conf/rf.conf /hibench/conf/workloads/ml/rf.conf
 
 # Execution
 ADD run.sh /
