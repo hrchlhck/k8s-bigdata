@@ -33,10 +33,10 @@ The report will be saved in the base directory with the name `hibench.report`.
 - Can specify which node `namenode`, `resourcemanager` and `historyserver` will be launched on by assigning the label `type=master`. If you are new to Kubernetes, just type `kubectl label nodes YOURNODE type=master`
 
 ### Future works
-- Support data streaming frameworks such as Apache Kafka
-- Switch static to dynamic environment variables for containers (avoid building on every change in `./hadoop/base/hadoop.env` file)
-- ~Implement a configuration parser to run HiBench without changing `run.sh`~
-- ~Implement a solution to change the size of input data for HiBench benchmarks without accessing `namenode` pod directly~
+- 🗴 Support data streaming frameworks such as Apache Kafka
+- ✓ Switch static to dynamic environment variables for containers (avoid building on every change in `./hadoop/base/hadoop.env` file)
+- ✓ Implement a configuration parser to run HiBench without changing `run.sh`
+- ✓ Implement a solution to change the size of input data for HiBench benchmarks without accessing `namenode` pod directly
 
 ### Architecture
 ![Alt text](./doc/k8s-bigdata-architecture.svg)
