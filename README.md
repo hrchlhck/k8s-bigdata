@@ -39,6 +39,8 @@ The report will be saved in the base directory with the name `hibench.report`.
 - ✓ Implement a solution to change the size of input data for HiBench benchmarks without accessing `namenode` pod directly
 
 ### Architecture
+Based on locality of reference, HiBench, Hadoop Namenode and Spark Master are within the same container as processes. Also, HiBench needs the Hadoop and Spark directories that are located in the namenode pod.
+
 ![Alt text](./doc/k8s-bigdata-architecture.svg)
 
 ### References
