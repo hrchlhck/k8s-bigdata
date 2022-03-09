@@ -44,8 +44,6 @@ set_benchmark_input_size $INPUT_SIZE
 set_executor_memory "2g"
 set_executor_cores "4"
 
-sleep 30
-
 #########################
 ## CREATING INPUT DATA ##
 #########################

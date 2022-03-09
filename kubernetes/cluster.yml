@@ -17,13 +17,14 @@ data:
   YARN_CONF_yarn_resourcemanager_scheduler_address: resourcemanager:8030
   YARN_CONF_yarn_resourcemanager_resource__tracker_address: resourcemanager:8031
   YARN_CONF_yarn_timeline___service_hostname: historyserver
+  MAPRED_CONF_mapred_child_java_opts: "-Xmx4096m"
   MAPRED_CONF_mapreduce_jobhistory_address: historyserver:10020
   MAPRED_CONF_mapreduce_jobhistory_webapp_address: historyserver:19888
-  SPARK_NUM_CORES: "4"
+  SPARK_NUM_CORES: "2"
   SPARK_DRIVER_MEMORY: "32g"
   CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
   SPARK_MASTER: "spark://namenode:7077"
-  HADOOP_URL: "hdfs://namenode.k8s-bigdata.svc.cluster.local:9000"
+  HADOOP_URL: "hdfs://namenode:9000"
 ---
 apiVersion: v1
 kind: Service
@@ -91,8 +92,8 @@ spec:
       port: 19888
       targetPort: 19888
     - name: ipc
-      port: 10020
-      targetPort: 10020
+      port: 10200
+      targetPort: 10200
     - name: other-web-ui
       port: 8188
       targetPort: 8188
@@ -154,11 +155,11 @@ spec:
   replicas: 4
   selector:
     matchLabels:
-      app: datanode 
+      app: datanode
   template:
     metadata:
       labels:
-        app: datanode  
+        app: datanode
     spec:
       containers:
         - image: vpemfh7/hadoop-datanode
@@ -200,34 +201,6 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: historyserver
-  namespace: k8s-bigdata
-  labels: 
-    app: historyserver
-spec:
-  containers:
-    - image: vpemfh7/hadoop-historyserver
-      name: historyserver
-      imagePullPolicy: Never
-      env:
-      - name: SERVICE_PRECONDITION
-        value: "namenode:50070 namenode:9000 resourcemanager:8088"
-      envFrom:
-      - configMapRef:
-          name: hadoop-env
-      ports:
-        - containerPort: 8188
-        - containerPort: 19888
-        - containerPort: 10020  
-      volumeMounts:
-        - name: historyserver
-          mountPath: /hadoop/yarn/timeline
-  volumes:
-    - name: historyserver
----
-apiVersion: v1
-kind: Pod
-metadata:
   name: resourcemanager
   namespace: k8s-bigdata
   labels: 
@@ -254,5 +227,33 @@ spec:
           - curl 
           - -sI 
           - datanode:8081
-        initialDelaySeconds: 3
+        initialDelaySeconds: 2
         periodSeconds: 3
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: historyserver
+  namespace: k8s-bigdata
+  labels: 
+    app: historyserver
+spec:
+  containers:
+    - image: vpemfh7/hadoop-historyserver
+      name: historyserver
+      imagePullPolicy: Never
+      env:
+      - name: SERVICE_PRECONDITION
+        value: "namenode:9000 namenode:50070 datanode:8081"
+      envFrom:
+      - configMapRef:
+          name: hadoop-env
+      ports:
+        - containerPort: 8188
+        - containerPort: 19888
+        - containerPort: 10200  
+      volumeMounts:
+        - name: historyserver
+          mountPath: /hadoop/yarn/timeline
+  volumes:
+    - name: historyserver
