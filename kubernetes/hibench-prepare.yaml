@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hibench
+spec:
+  template:
+    metadata:
+      name: hibench
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: hibench
+          image: vpemfh7/hibench
+          command: ["/bin/bash", "-c", "hibench/bin/workloads/micro/wordcount/prepare/prepare.sh"]

@@ -125,10 +125,31 @@ metadata:
 spec:
   volumes:
     - name: vol
+    - name: shared
+      ephemeral: 
+        volumeClaimTemplate:
+          metadata:
+            labels:
+              type: shared
+          spec:
+            accessModes: ["ReadWriteMany"]
+            storageClassName: "shared-storage-class"
+            resources:
+              requests:
+                storage: 2Gi
   containers:
+  - name: spark-master
+    image: vpemfh7/spark-master
+    imagePullPolicy: IfNotPresent
+    envFrom:
+    - configMapRef:
+        name: hadoop-env
+    ports:
+      - containerPort: 8080
+      - containerPort: 7077
   - name: namenode
     image: vpemfh7/hadoop-namenode
-    imagePullPolicy: Never
+    imagePullPolicy: IfNotPresent
     envFrom:
     - configMapRef:
         name: hadoop-env
@@ -136,12 +157,12 @@ spec:
       - containerPort: 9870
       - containerPort: 9000
       - containerPort: 9866
-      - containerPort: 8080
-      - containerPort: 7077
       - containerPort: 6066
     volumeMounts:
       - name: vol
         mountPath: /hadoop/dfs/name
+      - name: shared
+        mountPath: /hadoop
 ---
 apiVersion: apps/v1
 kind: StatefulSet 
@@ -152,7 +173,7 @@ metadata:
     app: datanode
 spec:
   serviceName: "datanode"
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
       app: datanode
@@ -162,9 +183,15 @@ spec:
         app: datanode
     spec:
       containers:
+        - name: spark-slave
+          image: vpemfh7/spark-slave
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - configMapRef:
+              name: hadoop-env
         - image: vpemfh7/hadoop-datanode
           name: datanode
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           env:
           - name: SERVICE_PRECONDITION
             value: "namenode:50070 namenode:9000 namenode:8080"
@@ -182,7 +209,7 @@ spec:
             - containerPort: 50020
         - image: vpemfh7/hadoop-nodemanager
           name: nodemanager
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45454
           env:
@@ -209,7 +236,7 @@ spec:
   containers:
     - image: vpemfh7/hadoop-resourcemanager
       name: resourcemanager
-      imagePullPolicy: Never
+      imagePullPolicy: IfNotPresent
       env:
       - name: SERVICE_PRECONDITION
         value: "namenode:50070 namenode:9000 datanode:8081"
@@ -241,7 +268,7 @@ spec:
   containers:
     - image: vpemfh7/hadoop-historyserver
       name: historyserver
-      imagePullPolicy: Never
+      imagePullPolicy: IfNotPresent
       env:
       - name: SERVICE_PRECONDITION
         value: "namenode:9000 namenode:50070 datanode:8081"

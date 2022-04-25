@@ -24,3 +24,12 @@ RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_FI
     && mv ${SPARK_FILE} spark \
     && rm ${SPARK_FILE}.tgz \
     && cd /
+
+# Spark
+ENV SPARK_MASTER_PORT=7077
+ENV SPARK_MASTER_WEBUI_PORT=8080
+ENV SPARK_MASTER_LOG=/spark/logs
+ENV SPARK_HOME=/spark
+
+RUN cp /spark/conf/spark-defaults.conf.template /spark/conf/spark-defaults.conf
+RUN cp /spark/conf/spark-env.sh.template /spark/conf/spark-env.sh
