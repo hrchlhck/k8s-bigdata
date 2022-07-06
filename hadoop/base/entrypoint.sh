@@ -20,6 +20,11 @@ function create_config() {
     print "Created configuration file for $1"
 }
 
+function configure_spark() {
+   python3 /configure_spark.py $1 $2
+   print "Added $1 to $2"
+}
+
 load_config
 create_config "CORE_CONF" ${HADOOP_CONFIG}/core-site.xml
 create_config "HDFS_CONF" ${HADOOP_CONFIG}/hdfs-site.xml
@@ -31,6 +36,9 @@ cp /spark/conf/spark-env.sh.template /spark/conf/spark-env.sh
 
 echo spark.executor.cores $SPARK_NUM_CORES >> /spark/conf/spark-defaults.conf
 echo SPARK_WORKER_CORES=$SPARK_NUM_CORES >> /spark/conf/spark-env.sh
+
+echo spark.executor.memory $SPARK_EXECUTOR_MEMORY >> /spark/conf/spark-defaults.conf
+echo SPARK_WORKER_MEMORY=$SPARK_EXECUTOR_MEMORY >> /spark/conf/spark-env.sh
 
 # https://github.com/big-data-europe/docker-hadoop/blob/master/base/entrypoint.sh
 function wait_for_it()

@@ -2,6 +2,7 @@
 
 WORKLOAD=$1
 BENCHMARK=$2
+NAMESPACE=$3
 
 # Load functions
 . "$(dirname "$0")/functions.sh"
@@ -10,6 +11,6 @@ BENCHMARK=$2
 ## BENCHMARK ##
 ################
 
-bench $WORKLOAD $BENCHMARK
+bench $WORKLOAD $BENCHMARK $NAMESPACE
 
-finish
+finish $NAMESPACE

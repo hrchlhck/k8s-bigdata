@@ -2,7 +2,7 @@
 
 set -e
 
-TAG=latest
+TAG=local
 
 ### FUNCTIONS ###
 # Build a docker image
@@ -42,7 +42,7 @@ function push_all() {
 	local user=$1
 	local repo_prefix=$2
 	for image in $(ls $repo_prefix); do
-		docker push $user/$repo_prefix-$image
+		docker push $user/$repo_prefix-$image:$TAG
 	done
 }
 
@@ -51,7 +51,5 @@ function push_all() {
 # The command above will build Dockerfiles inside ./hibench and ./namenode
 
 build_all "-S" "hadoop" 
- push_all "vpemfh7" "hadoop"
-for dockerimage in $@; do
-    docker_push $dockerimage
-done
+push_all "vpemfh7" "hadoop"
+

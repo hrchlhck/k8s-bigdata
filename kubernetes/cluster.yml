@@ -21,7 +21,8 @@ data:
   MAPRED_CONF_mapreduce_jobhistory_address: historyserver:10020
   MAPRED_CONF_mapreduce_jobhistory_webapp_address: historyserver:19888
   SPARK_NUM_CORES: "2"
-  SPARK_DRIVER_MEMORY: "32g"
+  SPARK_EXECUTOR_CORES: "2"
+  SPARK_EXECUTOR_MEMORY: "1g"
   CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
   SPARK_MASTER: "spark://namenode:7077"
   HADOOP_URL: "hdfs://namenode:9000"
@@ -52,6 +53,24 @@ spec:
     - name: master-rest-spark
       port: 6066
       targetPort: 6066
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: namenode-external
+  namespace: k8s-bigdata
+spec:
+  selector:
+    app: namenode
+  ports:
+    - name: web-ui
+      port: 50070
+      targetPort: 50070
+    - name: web-ui-spark
+      port: 8080
+      targetPort: 8080
+  externalIPs:
+    - 192.168.3.100
 ---
 apiVersion: v1
 kind: Service
@@ -114,6 +133,9 @@ spec:
     - name: datanode-ipc
       port: 9864
       targetPort: 9864
+    - name: spark-worker-metrics
+      port: 4040
+      targetPort: 4040
 ---
 apiVersion: v1
 kind: Pod
@@ -127,8 +149,7 @@ spec:
     - name: vol
   containers:
   - name: namenode
-    image: vpemfh7/hadoop-namenode
-    imagePullPolicy: Never
+    image: vpemfh7/hadoop-namenode:local
     envFrom:
     - configMapRef:
         name: hadoop-env
@@ -161,15 +182,21 @@ spec:
       labels:
         app: datanode
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: datanode
       containers:
-        - image: vpemfh7/hadoop-datanode
+        - image: vpemfh7/hadoop-datanode:local
           name: datanode
-          imagePullPolicy: Never
           env:
           - name: SERVICE_PRECONDITION
             value: "namenode:50070 namenode:9000 namenode:8080"
           - name: NUM_CORES
-            value: "4"
+            value: "2"
           envFrom:
           - configMapRef:
               name: hadoop-env
@@ -180,9 +207,8 @@ spec:
             - containerPort: 8081
             - containerPort: 4040
             - containerPort: 50020
-        - image: vpemfh7/hadoop-nodemanager
+        - image: vpemfh7/hadoop-nodemanager:local
           name: nodemanager
-          imagePullPolicy: Never
           ports:
             - containerPort: 45454
           env:
@@ -205,11 +231,10 @@ metadata:
   namespace: k8s-bigdata
   labels: 
     app: resourcemanager
-spec: 
+spec:
   containers:
-    - image: vpemfh7/hadoop-resourcemanager
+    - image: vpemfh7/hadoop-resourcemanager:local
       name: resourcemanager
-      imagePullPolicy: Never
       env:
       - name: SERVICE_PRECONDITION
         value: "namenode:50070 namenode:9000 datanode:8081"
@@ -239,9 +264,8 @@ metadata:
     app: historyserver
 spec:
   containers:
-    - image: vpemfh7/hadoop-historyserver
+    - image: vpemfh7/hadoop-historyserver:local
       name: historyserver
-      imagePullPolicy: Never
       env:
       - name: SERVICE_PRECONDITION
         value: "namenode:9000 namenode:50070 datanode:8081"

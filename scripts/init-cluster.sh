@@ -8,6 +8,8 @@ ERR_TAG="[ ${RED}ERROR${PLAIN} ]"
 WORKLOAD=$1
 BENCHMARK=$2
 INPUT_SIZE=$3
+NAMESPACE=$4
+YAML=$5
 
 if [[ ! $WORKLOAD ]]; then
 	echo -e "${ERR_TAG} Missing WORKLOAD parameter"
@@ -24,14 +26,26 @@ if [[ ! $INPUT_SIZE ]]; then
 	exit 1
 fi
 
+if [[ ! $NAMESPACE ]]; then
+	echo -e "${ERR_TAG} Missing NAMESPACE parameter"
+	exit 1
+fi
+
+if [[ ! $YAML ]]; then
+	echo -e "${ERR_TAG} Missing YAML parameter"
+	exit 1
+fi
+
+
 ###################
 ## START CLUSTER ##
 ###################
-apply kubernetes/cluster.yml
+apply $YAML
 
-wait_pods
+sleep 5
 
-sleep 10
+wait_pods $NAMESPACE
+wait_historyserver $NAMESPACE
 
 ################
 ## NETWORKING ##
@@ -40,11 +54,11 @@ sleep 10
 #add_host historyserver
 #add_host datanodes
 #add_host resourcemanager
-set_benchmark_input_size $INPUT_SIZE
-set_executor_memory "2g"
-set_executor_cores "4"
+set_benchmark_input_size $INPUT_SIZE $NAMESPACE
+# set_executor_memory "4g"
+# set_executor_cores "2"
 
 #########################
 ## CREATING INPUT DATA ##
 #########################
-prepare $WORKLOAD $BENCHMARK
+prepare $WORKLOAD $BENCHMARK $NAMESPACE
