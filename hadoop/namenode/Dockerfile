@@ -34,11 +34,13 @@ ADD create_hibench_config.py ${CONF}/create_hibench_config.py
 ADD hadoop.env ${CONF}/hadoop.env
 ADD spark.env ${CONF}/spark.env
 
+COPY hibench_conf/hibench_prop_env_mapping.py /hibench/bin/functions/hibench_prop_env_mapping.py
 COPY hibench_conf/sort.conf /hibench/conf/workloads/micro/sort.conf
 COPY hibench_conf/terasort.conf /hibench/conf/workloads/micro/terasort.conf
 COPY hibench_conf/wordcount.conf /hibench/conf/workloads/micro/wordcount.conf
 COPY hibench_conf/pagerank.conf /hibench/conf/workloads/websearch/pagerank.conf
 COPY hibench_conf/rf.conf /hibench/conf/workloads/ml/rf.conf
+COPY hibench_conf/svm.conf /hibench/conf/workloads/ml/svm.conf
 
 # Execution
 ADD run.sh /

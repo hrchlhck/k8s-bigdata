@@ -42,10 +42,11 @@ fi
 ###################
 apply $YAML
 
-sleep 5
-
-wait_pods $NAMESPACE
-wait_historyserver $NAMESPACE
+wait_for_pod namenode 7077 $NAMESPACE
+wait_for_pod namenode 50070 $NAMESPACE
+wait_for_pod historyserver 10020 $NAMESPACE
+wait_for_pod historyserver 10033 $NAMESPACE
+wait_for_pod historyserver 10200 $NAMESPACE
 
 ################
 ## NETWORKING ##

@@ -137,17 +137,26 @@ function add_host() {
 }
 
 # Wait for pod to be ready
-function wait_pods() {
-	local namespace=$1
-	local pods=($(kubectl get pods -n $namespace --no-headers | awk '{print $1};'))
-	for pod in "${pods[@]}"; do
-		echo "Waiting for pod $pod"
-		while [ "$(kubectl get pods $pod -n $namespace -o jsonpath='{.status.phase}')" != "Running" ]; do
-			echo "waiting"
-			sleep 2
-		done
-	done
+function wait_for_pod() {
+	local podname=$1
+	local port=$2
+	local namespace=$3
+	local pod_ip=$(kubectl get pods -n $namespace -o wide | grep "$podname" | awk '{print $6}')
 
+	nc -z $pod_ip $port
+	code=$?
+	while [[ $code -ne 0 ]]; do
+			echo $podname $pod_ip $port
+			echo "Waiting for pod $podname at $port"
+			sleep 3
+			pod_ip=$(kubectl get pods -n $namespace -o wide | grep "$podname" | awk '{print $6}')
+			
+			nc -z $pod_ip $port
+			code=$?
+
+	done
+	sleep 5
+	echo $podname is ready
 }
 
 function wait_historyserver() {
